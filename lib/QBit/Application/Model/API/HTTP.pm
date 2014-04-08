@@ -60,11 +60,12 @@ sub get {
 
     $self->log(
         {
-            url     => $uri,
-            headers => $self->{'__LWP__'}->default_headers()->as_string(),
-            status  => $response->code,
-            content => defined($content) ? $content : undef,
-            error   => defined($content) ? undef : $response->status_line,
+            request  => $response->request->as_string,
+            url      => $uri,
+            status   => $response->code,
+            response => $response->headers->as_string,
+            (defined($content) ? (content => $content) : ()),
+            (defined($content) ? () : (error => $response->status_line)),
         }
     ) if $self->can('log');
 
