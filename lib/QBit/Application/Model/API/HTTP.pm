@@ -29,20 +29,10 @@ sub init {
     $self->SUPER::init();
 
     $self->{'__LWP__'} = LWP::UserAgent->new(timeout => $self->get_option('timeout', 300));
-    $self->{'__DEBUG__'} = $self->get_option('debug');
 }
 
 sub call {
     my ($self, $method, %params) = @_;
-
-    ldump(
-        {
-            http_call => {
-                method => $method,
-                params => \%params,
-            }
-        }
-    ) if $self->{'__DEBUG__'};
 
     my $uri = $self->get_option('url') . $method;
     my $delimiter = $uri =~ /\?/ ? '&' : '?';
@@ -68,16 +58,15 @@ sub get {
         }
     }
 
-    ldump(
+    $self->log(
         {
-            http_call_uri    => 'GET: ' . $uri,
-            http_call_result => {
-                status   => $response->code,
-                attempts => $retries,
-                content  => $content,
-            }
+            url     => $uri,
+            headers => $self->{'__LWP__'}->default_headers()->as_string(),
+            status  => $response->code,
+            content => defined($content) ? $content : undef,
+            error   => defined($content) ? undef : $response->status_line,
         }
-    ) if $self->{'__DEBUG__'};
+    ) if $self->can('log');
 
     throw Exception::API::HTTP $response unless defined($content);
     return $content;
