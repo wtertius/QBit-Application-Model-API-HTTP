@@ -64,8 +64,7 @@ sub get {
             url      => $uri,
             status   => $response->code,
             response => $response->headers->as_string,
-            (defined($content) ? (content => $content) : ()),
-            (defined($content) ? () : (error => $response->status_line)),
+            (defined($content) ? (content => $content) : (error => $response->status_line)),
         }
     ) if $self->can('log');
 
