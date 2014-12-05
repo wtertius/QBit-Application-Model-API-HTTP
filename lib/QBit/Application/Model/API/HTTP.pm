@@ -23,41 +23,49 @@ use base qw(QBit::Application::Model::API);
 
 use LWP::UserAgent;
 
+my %SPECIAL_FIELDS_NAMES = (
+    ''      => TRUE,
+    ':post' => TRUE,
+);
+
 sub init {
     my ($self) = @_;
 
     $self->SUPER::init();
 
     $self->{'__LWP__'} = LWP::UserAgent->new(timeout => $self->get_option('timeout', 300));
-    $self->{'__DEBUG__'} = $self->get_option('debug');
 }
 
 sub call {
     my ($self, $method, %params) = @_;
 
-    ldump(
-        {
-            http_call => {
-                method => $method,
-                params => \%params,
-            }
-        }
-    ) if $self->{'__DEBUG__'};
-
     my $uri = $self->get_option('url') . $method;
-    my $delimiter = $uri =~ /\?/ ? '&' : '?';
-    $uri .= $delimiter . join('&', map {$_ . '=' . uri_escape($params{$_})} keys %params) if %params;
-    return $self->get($uri);
+
+    my @request_fields = grep {!exists($SPECIAL_FIELDS_NAMES{$_})} keys(%params);
+
+    if (exists($params{':post'})) {
+        $params{''} = {hash_transform(\%params, \@request_fields)} if !exists($params{''}) && @request_fields;
+    } elsif (@request_fields) {
+        my $delimiter = $uri =~ /\?/ ? '&' : '?';
+        $uri .= $delimiter . join('&', map {$_ . '=' . uri_escape($params{$_})} @request_fields);
+    }
+
+    return $self->get($uri, %params);
 }
 
 sub get {
-    my ($self, $uri) = @_;
+    my ($self, $uri, %params) = @_;
 
     my ($retries, $content, $response) = (0);
 
     while (($retries < $self->get_option('attempts', 3)) && !defined($content)) {
         sleep($self->get_option('delay', 1)) if $retries++;
-        $response = $self->{'__LWP__'}->get($uri);
+
+        if (exists($params{':post'})) {
+            $response = $self->{'__LWP__'}->post($uri, Content => $params{''});
+        } else {
+            $response = $self->{'__LWP__'}->get($uri);
+        }
 
         if ($response->is_success()) {
             $content = $response->decoded_content();
@@ -68,16 +76,15 @@ sub get {
         }
     }
 
-    ldump(
+    $self->log(
         {
-            http_call_uri    => 'GET: ' . $uri,
-            http_call_result => {
-                status   => $response->code,
-                attempts => $retries,
-                content  => $content,
-            }
+            request  => $response->request->as_string,
+            url      => $uri,
+            status   => $response->code,
+            response => $response->headers->as_string,
+            (defined($content) ? (content => $content) : (error => $response->status_line)),
         }
-    ) if $self->{'__DEBUG__'};
+    ) if $self->can('log');
 
     throw Exception::API::HTTP $response unless defined($content);
     return $content;
