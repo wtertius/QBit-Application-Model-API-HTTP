@@ -44,7 +44,11 @@ sub call {
     my @request_fields = grep {!exists($SPECIAL_FIELDS_NAMES{$_})} keys(%params);
 
     if (exists($params{':post'})) {
-        $params{''} = {hash_transform(\%params, \@request_fields)} if !exists($params{''}) && @request_fields;
+        if (exists($params{''})) {
+            utf8::encode($params{''}) if utf8::is_utf8($params{''});
+        } elsif (!exists($params{''}) && @request_fields) {
+            $params{''} = {hash_transform(\%params, \@request_fields)};
+        }
     } elsif (@request_fields) {
         my $delimiter = $uri =~ /\?/ ? '&' : '?';
         $uri .= $delimiter . join('&', map {$_ . '=' . uri_escape($params{$_})} @request_fields);
