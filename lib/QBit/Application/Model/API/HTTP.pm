@@ -23,6 +23,11 @@ use base qw(QBit::Application::Model::API);
 
 use LWP::UserAgent;
 
+my %SPECIAL_FIELDS_NAMES = (
+    ''      => TRUE,
+    ':post' => TRUE,
+);
+
 sub init {
     my ($self) = @_;
 
@@ -35,19 +40,36 @@ sub call {
     my ($self, $method, %params) = @_;
 
     my $uri = $self->get_option('url') . $method;
-    my $delimiter = $uri =~ /\?/ ? '&' : '?';
-    $uri .= $delimiter . join('&', map {$_ . '=' . uri_escape($params{$_})} keys %params) if %params;
-    return $self->get($uri);
+
+    my @request_fields = grep {!exists($SPECIAL_FIELDS_NAMES{$_})} keys(%params);
+
+    if (exists($params{':post'})) {
+        if (exists($params{''})) {
+            utf8::encode($params{''}) if utf8::is_utf8($params{''});
+        } elsif (!exists($params{''}) && @request_fields) {
+            $params{''} = {hash_transform(\%params, \@request_fields)};
+        }
+    } elsif (@request_fields) {
+        my $delimiter = $uri =~ /\?/ ? '&' : '?';
+        $uri .= $delimiter . join('&', map {$_ . '=' . uri_escape($params{$_})} @request_fields);
+    }
+
+    return $self->get($uri, %params);
 }
 
 sub get {
-    my ($self, $uri) = @_;
+    my ($self, $uri, %params) = @_;
 
     my ($retries, $content, $response) = (0);
 
     while (($retries < $self->get_option('attempts', 3)) && !defined($content)) {
         sleep($self->get_option('delay', 1)) if $retries++;
-        $response = $self->{'__LWP__'}->get($uri);
+
+        if (exists($params{':post'})) {
+            $response = $self->{'__LWP__'}->post($uri, Content => $params{''});
+        } else {
+            $response = $self->{'__LWP__'}->get($uri);
+        }
 
         if ($response->is_success()) {
             $content = $response->decoded_content();
