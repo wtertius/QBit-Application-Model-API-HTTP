@@ -1,4 +1,4 @@
-libqbit-application-model-api-http-perl (0.004) raring; urgency=low
+libtertiusqbit-application-model-api-http-perl (0.004) raring; urgency=low
 
   * utf8::encode
 
@@ -6,7 +6,7 @@ libqbit-application-model-api-http-perl (0.004) raring; urgency=low
 
  -- Sergei Svistunov <sergei-svistunov@yandex.ru>  Wed, 10 Dec 2014 16:43:02 +0400
 
-libqbit-application-model-api-http-perl (0.003) raring; urgency=low
+libtertiusqbit-application-model-api-http-perl (0.003) raring; urgency=low
 
   * fix
 
@@ -16,13 +16,13 @@ libqbit-application-model-api-http-perl (0.003) raring; urgency=low
 
  -- Sergei Svistunov <sergei-svistunov@yandex.ru>  Tue, 08 Apr 2014 12:48:56 +0400
 
-libqbit-application-model-api-http-perl (0.002) raring; urgency=low
+libtertiusqbit-application-model-api-http-perl (0.002) raring; urgency=low
 
   * Fixed debian dependses
 
  -- Sergei Svistunov <sergei-svistunov@yandex.ru>  Tue, 24 Sep 2013 19:33:54 +0400
 
-libqbit-application-model-api-http-perl (0.001) raring; urgency=low
+libtertiusqbit-application-model-api-http-perl (0.001) raring; urgency=low
 
   * Initial commit
 

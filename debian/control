@@ -1,12 +1,14 @@
-Source: libqbit-application-model-api-http-perl
+Source: libtertiusqbit-application-model-api-http-perl
 Section: perl
 Priority: extra
-Maintainer: Sergei Svistunov <sergei-svistunov@yandex.ru>
-Build-Depends: debhelper (>= 8.0.0), perl, libqbit-perl, libqbit-application-model-api-perl, libwww-perl
+Maintainer: Dmitry Lukiyanchuk <wtertius@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), perl, libtertiusqbit-perl, libtertiusqbit-application-model-api-perl, libwww-perl
 Standards-Version: 3.9.4
 
-Package: libqbit-application-model-api-http-perl
+Package: libtertiusqbit-application-model-api-http-perl
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, perl, libqbit-perl, libqbit-application-model-api-perl, libwww-perl
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, perl, libtertiusqbit-perl, libtertiusqbit-application-model-api-perl, libwww-perl
+Conflicts: libqbit-application-model-api-http-perl
+Replaces: libqbit-application-model-api-http-perl
 Description: Base class for construct HTTP API connectors.
  Base class for construct HTTP API connectors.
